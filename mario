@@ -6,25 +6,23 @@ using namespace sf;
 
 int main()
 {
-    RenderWindow window1(VideoMode(800, 561), "Super Sonic");
+    RenderWindow window1(VideoMode(800, 561), "Mario");
     window1.setFramerateLimit(15);
-    Texture texture, texture1, coin, sonic1;
-    texture.loadFromFile("output-onlinepngtools (2).png");
-    texture1.loadFromFile("images (1).jpg");
+    Texture background, mario, coin, sonic1;
+    background.loadFromFile("images (1).jpg");
+    mario.loadFromFile("output-onlinepngtools (2).png");
     coin.loadFromFile("output-onlinepngtools (4).png");
-    sonic1.loadFromFile("output-onlinepngtools (5).png");
-    Sprite sprite(texture), sprite1(texture1), coin1(coin), sonic(sonic1);
-    sprite.setPosition(10, 400);
+    Sprite mario1(mario), background1(background), coin1(coin);
+    mario1.setPosition(10, 380);
     coin1.setPosition(500, 270);
-    sonic.setPosition(500, 380);
-    Sound sound1;
+    Sound coin_sound;
     SoundBuffer sound;
     sound.loadFromFile("Mario-coin-sound.wav");
-    sound1.setBuffer(sound);
+    coin_sound.setBuffer(sound);
     
     const float gravity = 45, ground=380, jumpf= -180 ;
 
-    int x = 1, y=1;
+    int x = 1;
 
     enum {down, up, left, right};
 
@@ -39,33 +37,31 @@ int main()
                 window1.close();
 
         }
-
-
         if (Keyboard::isKeyPressed(Keyboard::Right))
         {
-            sprite.move(15.0f, 0.0f);
+            mario1.move(15.0f, 0.0f);
             source.y = right;
             source.x++;
-            if (source.x * 100 >= texture.getSize().x)
+            if (source.x * 100 >= mario.getSize().x)
                 source.x = 0;
         }
         if (Keyboard::isKeyPressed(Keyboard::Left))
         {
-            sprite.move(-15.0f, 0.0f);
+            mario1.move(-15.0f, 0.0f);
             source.y = left;
             source.x++;
-            if (source.x * 100 >= texture.getSize().x)
+            if (source.x * 100 >= mario.getSize().x)
                 source.x = 0;
         }
         if (Keyboard::isKeyPressed(Keyboard::Up))
         {
-            if (sprite.getPosition().y == ground )
-            sprite.move(0.1f, jumpf);
+            if (mario1.getPosition().y == ground )
+                mario1.move(0.0f, jumpf);
         }
 
-        if (sprite.getPosition().y < ground)
+        if (mario1.getPosition().y < ground)
         {
-            sprite.move(0, gravity);
+            mario1.move(0, gravity);
         }
         
         coin1.setTextureRect(IntRect(x*58, 0, 58, 64));
@@ -73,24 +69,17 @@ int main()
         if (x >= 6)
             x = 1;
 
-        sprite.setTextureRect(IntRect(source.x * 100, source.y * 150, 100, 150));
+        mario1.setTextureRect(IntRect(source.x * 100, source.y * 150, 100, 150));
 
-        if (sprite.getGlobalBounds().intersects(coin1.getGlobalBounds()))
+        if (mario1.getGlobalBounds().intersects(coin1.getGlobalBounds()))
         {
-            sound1.play(); 
+            coin_sound.play();
             coin1.setPosition(-100, -100);
         }
-
-        sonic.setTextureRect(IntRect(y*100, 125, 100, 105));
-        y++;
-        if (y >= 9)
-            y = 1;
-
         window1.clear();
-        window1.draw(sprite1);
-        window1.draw(sonic);
+        window1.draw(background1);
         window1.draw(coin1);
-        window1.draw(sprite);
+        window1.draw(mario1);
         window1.display();
     }
 }
