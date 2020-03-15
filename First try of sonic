@@ -1,0 +1,169 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <iostream>
+using namespace std;
+using namespace sf;
+
+
+//variables.
+Sound coin_sound;
+SoundBuffer sound;
+Texture background, ring, sonic;
+Sprite sonic1, background1, ring1[100];
+const float gravity = 45, ground=380, jumpforce= -180 , num_of_rings=99 ;
+int  ring_rect=1, ring_starting_position = 500;
+  
+
+//Rings collision.
+bool collision(Sprite ring[])
+{
+    for (int i = 1; i < 100; i++)
+    {
+        if (sonic1.getGlobalBounds().intersects(ring[i].getGlobalBounds()))
+        {
+            coin_sound.play();
+            ring[i].setPosition(-1000, -1000);
+            return i;
+        }
+    }
+    return 0;
+}
+
+
+int main()
+{
+    //window settings.
+    RenderWindow window1(VideoMode(1000, 550), "Mario");
+    window1.setFramerateLimit(40);
+
+    //rings.
+    ring.loadFromFile("rings.png");
+    for (int i = 1; i <= 99; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position+ 50 , 270);
+    }
+    
+    //Character first position.
+    sonic.loadFromFile("sonic.png");
+    sonic1.setTexture(sonic);
+    sonic1.setPosition(10, 380);
+
+    //background.
+    background.loadFromFile("background.jpg");
+    background1.setTexture(background);
+
+    //Level 1 background music.
+    Sound Level1_background;
+    SoundBuffer  Level1_background1;
+    Level1_background1.loadFromFile("Green Hill Zone.ogg");
+    Level1_background.setBuffer(Level1_background1);
+    Level1_background.play();
+
+    //ring sound.
+    sound.loadFromFile("Mario-coin-sound.wav");
+    coin_sound.setBuffer(sound);
+   
+    //character movement.
+    enum character {down, up, left=6, right};
+    int mover = 0, moveu = 0, moved = 0;
+
+    while (window1.isOpen())
+    {
+        //first position.
+        sonic1.setTextureRect(IntRect(120 , 0, 120, 155));
+       
+        //closing window.
+        Event event;
+        while (window1.pollEvent(event))
+        {
+            if (event.type == Event::Closed)
+                window1.close();
+           
+
+        }
+       
+        //moving right.
+        if (Keyboard::isKeyPressed(Keyboard::Right))
+        {
+            sonic1.move(15.0f, 0.0f);
+
+            sonic1.setTextureRect(IntRect(120+ mover*120, 155*3, 120, 155));
+            mover++;
+            if (mover == 14)
+                mover = 7;
+        }
+       
+        //jumping.
+        if (Keyboard::isKeyPressed(Keyboard::Up))
+        {
+            if (sonic1.getPosition().y == ground )
+                sonic1.move(0.0f, jumpforce);
+            sonic1.setTextureRect(IntRect(120*7+50 + moveu* 120,  155*7 , 120, 155));
+            moveu++;
+            if (moveu == 6)
+                moveu = 4;
+        }
+
+        //spin .
+        if (Keyboard::isKeyPressed(Keyboard::Down))
+        {
+            sonic1.setTextureRect(IntRect(80+ moved * 120, 155 * 6,80, 155));
+            moved++;
+            if (moved >= 9)
+                moved = 7;
+        }
+
+        //spin daash.
+        if (event.type == Event::KeyReleased)
+        {
+            if ((event.key.code == Keyboard::Down)&& moved>=5)
+            { 
+                sonic1.setTextureRect(IntRect(120 - 30 + 8 * 120, 155 * 6, 120, 155));
+                sonic1.move(10, 0);
+                moved = 0;
+            }
+        }
+
+        //gravity
+        if (sonic1.getPosition().y < ground)
+        {
+            sonic1.move(0, gravity);
+        }
+
+        //rings line.
+        ring1[1].setTextureRect(IntRect(ring_rect * 64, 0, 64, 64));
+        ring_rect++;
+        if (ring_rect >= 10)
+        {
+            ring_rect = 1;
+        }
+        for (int i=2; i<=99; i++)
+        ring1[i].setTextureRect(IntRect(ring_rect * 64, 0, 64, 64));
+
+        //using ring collision function on the array of rings.
+        ring1[collision(ring1)].setPosition(-100, -100);
+
+        //background scrolling.
+        if (sonic1.getPosition().x >= 400)
+        {
+            background1.move(-10, 0);
+            sonic1.move(-15, 0);
+            for (int i = 1; i < 100; i++)
+            {
+                ring1[i].move(-10, 0);
+            }
+
+        }
+       
+        //drawing.
+        window1.clear();
+        window1.draw(background1);
+        for (int i = 1; i <= num_of_rings; i++)
+        {
+            window1.draw(ring1[i]);
+        }
+        window1.draw(sonic1);
+        window1.display();
+    }
+}
