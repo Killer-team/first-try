@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>f
+#include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
 using namespace std;
