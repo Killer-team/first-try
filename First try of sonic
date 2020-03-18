@@ -547,13 +547,13 @@ void Level1()
     window1.setFramerateLimit(40);
 
     //background.
-    background_level_1.loadFromFile("Sprites/background.jpg");
+    background_level_1.loadFromFile(background.jpg");
     background_level1_1.setTexture(background_level_1);
 
     //Level 1 background music.
     Sound Level1_background;
     SoundBuffer  Level1_background1;
-    Level1_background1.loadFromFile("Music/Green Hill Zone.ogg");
+    Level1_background1.loadFromFile("Green Hill Zone.ogg");
     Level1_background.setBuffer(Level1_background1);
     Level1_background.play();
     Level1_background.setLoop(true);
@@ -604,7 +604,7 @@ void Level1()
 int main()
 {
     //rings.
-    ring.loadFromFile("Sprites/rings.png");
+    ring.loadFromFile("rings.png");
     for (int i = 1; i <= 99; i++)
     {
         ring1[i].setTexture(ring);
@@ -615,7 +615,7 @@ int main()
     font.loadFromFile("Raisin Bread.ttf");
 
     //ring sound.
-    coin_sound1.loadFromFile("Music/Mario-coin-sound.wav");
+    coin_sound1.loadFromFile("Mario-coin-sound.wav");
     coin_sound.setBuffer(coin_sound1);
 
     //Character first position.
