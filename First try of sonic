@@ -1,18 +1,305 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
+#include <string>
+#include <fstream>
+
 using namespace std;
 using namespace sf;
 
 
 //variables.
-Sound coin_sound;
-SoundBuffer sound;
-Texture background, ring, sonic;
-Sprite sonic1, background1, ring1[100];
-const float gravity = 45, ground=380, jumpforce= -180 , num_of_rings=99 ;
-int  ring_rect=1, ring_starting_position = 500;
-  
+Sound  titlescreen_music,  menu_music, coin_sound;
+SoundBuffer  titlescreen_music1, menu_music1, coin_sound1;
+Texture titlescreen, menu, background_level_1,  ring, sonic, enemies;
+Sprite titlescreen1, menu1, sonic1, background_level1_1, ring1[100], enemies1[20];
+Font font;
+Event event2, event3, event4;
+Text menu2[5], currname, nom, scr, nam;
+const float gravity = 10, ground = 400, jumpforce = -190;
+float time1 = 0;
+int  ring_rect = 1, ring_starting_position = 500, constantfalling = 0, jumpmaxheight = 0, ringcount = 0,
+score = 0, numofplayers, scores_count = 0, notmoving = 0, mover = 0, moveu = 0, moved = 0, timedanimation1 = 0, timedanimation2=0 , timedanimation3 = 0,
+sspritearr[50] = { 178,68,248, 67,317, 66,385 ,67,454, 67,523 ,67,594,
+                   73,670 ,67,741 ,69,815 ,78, 899 ,77,980 ,79,1062 ,91,
+                   1156 ,91,1251 ,88,1345 ,86,1439 ,86,1531 ,63,1602 ,63 },
+    dashspritearr[20] = { 543, 66, 612, 69, 699, 70, 775, 68, 849, 67, 920, 67, 991, 68, 1062, 68 },
+    uspritearr[20] = { 1156, 67, 1234, 71, 1319, 68, 1397, 70, 1487, 70 },
+    rspritearr[40] = { 36, 74, 117, 70, 194, 74, 276, 72, 393, 77, 472, 76, 550, 78, 630, 79, 743, 95, 842, 95, 941, 95, 1039, 95 };
+bool  men = 0, lvl1 = 0, lvl2 = 0, lvl3=0, booly=0;
+
+
+struct scores
+{
+    string num;
+    string name;
+    string scored;
+
+};
+scores players[100];
+scores currscore;
+
+
+
+//window settings.
+RenderWindow window1(VideoMode(1000, 550), "Mario");
+
+
+//closing window.
+void closing()
+{
+    Event event;
+    while (window1.pollEvent(event))
+    {
+        if (event.type == Event::Closed)
+        {
+            window1.close();
+            titlescreen_music.stop();
+        }
+    }
+}
+
+//background scrolling.
+void backgroundscroll(Sprite background)
+{
+    //background scrolling.
+    if (sonic1.getPosition().x >= 400)
+    {
+        background.move(-10, 0);
+        sonic1.move(-15, 0);
+        for (int i = 1; i < 100; i++)
+        {
+            ring1[i].move(-10, 0);
+        }
+
+    }
+}
+
+
+//moving character func.
+void moving()
+{
+       if (!Keyboard::isKeyPressed(Keyboard::Right))
+        {
+           mover = 0;
+           timedanimation2 = 0;
+        }
+
+       if (!Keyboard::isKeyPressed(Keyboard::Up))
+       {
+           moveu = 0;  
+       }
+
+       if (!Keyboard::isKeyPressed(Keyboard::Down))
+       {
+           moved = 0;
+       }
+        
+
+        //first position.
+          timedanimation1++;
+         sonic1.setTextureRect(IntRect(sspritearr[notmoving], 176, sspritearr[notmoving + 1], 94));
+         timedanimation3++;
+         if (timedanimation3 == 20)
+         {
+             if (timedanimation1>0)
+             notmoving += 2;
+             if (notmoving == 10 && timedanimation1 <= 20 )
+                 notmoving = 6;
+             else if (notmoving == 22 && timedanimation1 <= 80)
+                 notmoving = 16;
+             else if (notmoving == 34)
+                 notmoving = 24;
+             timedanimation3 = 0;
+         }
+    
+   
+
+        //moving right.
+        if (Keyboard::isKeyPressed(Keyboard::Right))
+        {
+            timedanimation1 = -100;
+            notmoving = 0;
+            sonic1.move(15.0f, 0.0f);
+            timedanimation2++;
+            sonic1.setTextureRect(IntRect(rspritearr[mover], 863 , rspritearr[mover+1] , 85));
+            mover+=2;
+            if (mover == 8 && timedanimation2 <= 20)
+                mover = 0;
+            else if (mover == 16 && timedanimation2 <= 50)
+                mover = 8;
+            else if (mover == 24)
+                mover = 16;
+        }
+
+        //spin .
+        if (Keyboard::isKeyPressed(Keyboard::Down))
+        {
+            notmoving = 0;
+            timedanimation1 = -100;
+            sonic1.setTextureRect(IntRect(uspritearr[moved], 337, uspritearr[moved + 1], 70));
+                moved += 2;
+                if (moved == 10)
+                {
+                    moved = 0;
+               
+                }
+        }
+
+        //jumping.
+        if (Keyboard::isKeyPressed(Keyboard::Up))
+        {
+            notmoving = 0;
+            timedanimation1 = -100;
+            if (sonic1.getPosition().y == ground)
+                for (int i = 0; i < 380; i++)
+                    sonic1.move(0, -0.5);
+
+            sonic1.setTextureRect(IntRect(uspritearr[moveu], 337, uspritearr[moveu+1], 70));
+            moveu+=2;
+            if (moveu == 10)
+                moveu = 0;
+
+        }
+
+
+        //gravity
+
+        if (sonic1.getPosition().y < ground)
+        {
+            if (sonic1.getPosition().y >= ground + jumpforce || jumpmaxheight == 1)
+            {
+                jumpmaxheight = 1;
+                sonic1.move(0, gravity);           
+            }
+        }
+
+        if (sonic1.getPosition().y == ground)
+        {
+            jumpmaxheight = 0;
+        }
+
+}
+
+
+//start function.
+void startfunc()
+{
+    menu2[4].setString("Type Your Name Then Press Enter");
+    menu2[4].setFillColor(Color(63, 71, 204));
+    menu2[4].setFont(font);
+    menu2[4].setPosition(50, 300);
+    menu2[4].setCharacterSize(30);
+    currname.setPosition(180, 360);
+    currname.setCharacterSize(30);
+    currname.setFont(font);
+    currname.setStyle(Text::Underlined);
+    currname.setFillColor(Color(173, 148, 55));
+
+    while (!Keyboard::isKeyPressed(Keyboard::Enter))
+    {
+        booly = 1;
+        if (Keyboard::isKeyPressed(Keyboard::Escape))
+        {
+            booly = 0;
+            break;
+        }
+        while (window1.pollEvent(event2))
+        {
+            currname.setString(currscore.name);
+            if (event2.type == Event::KeyPressed)
+            {
+                switch (event2.key.code)
+                {
+                case Keyboard::A:
+                    currscore.name.push_back('A');
+                    break;
+                case Keyboard::B:
+                    currscore.name.push_back('B');
+                    break;
+                case Keyboard::C:
+                    currscore.name.push_back('C');
+                    break;
+                case Keyboard::D:
+                    currscore.name.push_back('D');
+                    break;
+                case Keyboard::E:
+                    currscore.name.push_back('E');
+                    break;
+                case Keyboard::F:
+                    currscore.name.push_back('F');
+                    break;
+                case Keyboard::G:
+                    currscore.name.push_back('G');
+                    break;
+                case Keyboard::H:
+                    currscore.name.push_back('H');
+                    break;
+                case Keyboard::I:
+                    currscore.name.push_back('I');
+                    break;
+                case Keyboard::J:
+                    currscore.name.push_back('J');
+                    break;
+                case Keyboard::K:
+                    currscore.name.push_back('K');
+                    break;
+                case Keyboard::L:
+                    currscore.name.push_back('L');
+                    break;
+                case Keyboard::M:
+                    currscore.name.push_back('M');
+                    break;
+                case Keyboard::N:
+                    currscore.name.push_back('N');
+                    break;
+                case Keyboard::O:
+                    currscore.name.push_back('O');
+                    break;
+                case Keyboard::P:
+                    currscore.name.push_back('P');
+                    break;
+                case Keyboard::Q:
+                    currscore.name.push_back('Q');
+                    break;
+                case Keyboard::R:
+                    currscore.name.push_back('R');
+                    break;
+                case Keyboard::S:
+                    currscore.name.push_back('S');
+                    break;
+                case Keyboard::T:
+                    currscore.name.push_back('T');
+                    break;
+                case Keyboard::U:
+                    currscore.name.push_back('U');
+                    break;
+                case Keyboard::V:
+                    currscore.name.push_back('V');
+                    break;
+                case Keyboard::W:
+                    currscore.name.push_back('W');
+                    break;
+                case Keyboard::X:
+                    currscore.name.push_back('X');
+                    break;
+                case Keyboard::Y:
+                    currscore.name.push_back('Y');
+                    break;
+                case Keyboard::Z:
+                    currscore.name.push_back('Z');
+                    break;
+                }
+            }
+            window1.clear();
+            window1.draw(menu1);
+            window1.draw(menu2[4]);
+            window1.draw(currname);
+            window1.display();
+        }
+    }
+}
+
 
 //Rings collision.
 bool collision(Sprite ring[])
@@ -23,6 +310,7 @@ bool collision(Sprite ring[])
         {
             coin_sound.play();
             ring[i].setPosition(-1000, -1000);
+            ringcount++;
             return i;
         }
     }
@@ -30,140 +318,320 @@ bool collision(Sprite ring[])
 }
 
 
-int main()
+//Rings counter.
+void stats()
 {
-    //window settings.
-    RenderWindow window1(VideoMode(1000, 550), "Mario");
+    ifstream scoress;
+    scoress.open("saves/scores.txt");
+
+    if (scoress.fail())
+    {
+        cout << "Fail";
+        exit(1);
+    }
+    while (!scoress.eof())
+    {
+        scoress >> players[scores_count].num;
+        scoress >> players[scores_count].name;
+        scoress >> players[scores_count].scored;
+        scores_count++;
+    }
+}
+
+
+//Titlescreen.
+void titlescreenfunc()
+{
+    titlescreen_music1.loadFromFile("Music/Green Hill Zone.ogg");
+    titlescreen_music.setBuffer(titlescreen_music1);
+    titlescreen_music.play();
+    titlescreen_music.setLoop(true);
+
+    while (!Keyboard::isKeyPressed(Keyboard::Space))
+    {
+        closing();
+        titlescreen.loadFromFile("Sprites/background_titlescreen.png");
+        titlescreen1.setTexture(titlescreen);
+
+        window1.clear();
+        window1.draw(titlescreen1);
+        window1.display();
+
+    }
+    //sound plays to the end before leaving function.
+    coin_sound.play();
+    while (coin_sound.getStatus() == Sound::Playing);
+}
+
+
+//main menu.
+void menufunc()
+{
+
+    int p = 0, t = 0;
+    menu.loadFromFile("Sprites/menu.jpg");
+    menu1.setTexture(menu);
+
+    menu2[1].setString("Start");
+    menu2[1].setFont(font);
+    menu2[1].setPosition(10, 290);
+    menu2[1].setCharacterSize(50);
+    menu2[2].setString("Leaderboard");
+    menu2[2].setFont(font);
+    menu2[2].setPosition(10, 360);
+    menu2[2].setCharacterSize(50);
+    menu2[3].setString("exit");
+    menu2[3].setFont(font);
+    menu2[3].setPosition(10, 430);
+    menu2[3].setCharacterSize(50);
+
+
+    while (true)
+    {
+        closing();
+        Vector2i  mousep = Mouse::getPosition(window1);
+ 
+        t++;
+        if (t == 150)
+            t = 0;
+            if (Keyboard::isKeyPressed(Keyboard::Down) && t==120)
+            {
+                    p++;
+                    if (p == 4)
+                        p = 1;
+                    menu2[p].setFillColor(Color::Red);
+            }
+            else if (Keyboard::isKeyPressed(Keyboard::Up) && t == 120)
+            {
+                p--;
+                if (p == 0)
+                    p = 3;
+                menu2[p].setFillColor(Color::Red);
+            }
+        
+
+        if ((mousep.x >= 10 && mousep.x <= 150) && (mousep.y >= 300 && mousep.y <= 350))
+        {
+            p = 0;
+            menu2[1].setFillColor(Color::Red);
+            if (Mouse::isButtonPressed(Mouse::Left) || Keyboard::isKeyPressed(Keyboard::Space))
+            {
+                startfunc();
+                if (booly == 1)
+                {
+                    lvl1 = 1;
+                    titlescreen_music.stop();
+                    break;
+                }
+            }
+        }
+        else
+        {
+            if (p != 1)
+            {
+                coin_sound.play();
+                menu2[1].setFillColor(Color(63, 71, 204));
+            }
+        }
+        if ((mousep.x >= 10 && mousep.x <= 310) && (mousep.y >= 370 && mousep.y <= 420))
+        {
+            p = 0;
+            menu2[2].setFillColor(Color::Red);
+            if (Mouse::isButtonPressed(Mouse::Left) || Keyboard::isKeyPressed(Keyboard::Space))
+            {
+                nom.setFont(font);
+                nom.setCharacterSize(20);
+                nom.setFillColor(Color::White);
+                nam.setFont(font);
+                nam.setCharacterSize(20);
+                nam.setFillColor(Color::White);
+                scr.setFont(font);
+                scr.setCharacterSize(20);
+                scr.setFillColor(Color::White);
+                int   xpos=0, ypos=0;
+                    stats();
+                    window1.clear();
+                    window1.draw(menu1);
+                    window1.display();
+                    for (int l = 0; l < scores_count; l++)
+                    {
+                        nom.setString(players[l].num);
+                        nam.setString(players[l].name);
+                        scr.setString(players[l].scored);
+                        nom.setPosition(xpos, ypos);
+                        xpos += 200;
+                        nam.setPosition(xpos, ypos);
+                        xpos += 200;
+                        scr.setPosition(xpos, ypos);
+                        
+                        window1.draw(nom);
+                        window1.draw(nam);
+                        window1.draw(scr);
+                        window1.display();
+                        ypos += 30;
+                        xpos = 0;
+                        
+                    }
+                while (!Keyboard::isKeyPressed(Keyboard::Escape))
+                {
+                }
+            }
+        }
+        else
+        {
+            if (p != 2)
+            {
+                coin_sound.play();
+                menu2[2].setFillColor(Color(173, 148, 55));
+            }
+        }
+        if ((mousep.x >= 10 && mousep.x <= 100) && (mousep.y >= 440 && mousep.y <= 490))
+        {
+            p = 0;
+            menu2[3].setFillColor(Color::Red);
+            if (Mouse::isButtonPressed(Mouse::Left) || Keyboard::isKeyPressed(Keyboard::Space))
+            {
+                break;
+            }
+        }
+        else
+        {
+            if (p != 3)
+            {
+                coin_sound.play();
+                menu2[3].setFillColor(Color(173, 148, 55));
+            }
+        }
+
+
+        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 1)
+        {
+            startfunc();
+            if (booly == 1)
+            {
+                lvl1 = 1;
+                titlescreen_music.stop();
+                break;
+            }
+        }
+        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 2)
+        {
+            while (!Keyboard::isKeyPressed(Keyboard::Escape))
+            {
+                window1.clear();
+                window1.draw(menu1);
+                window1.display();
+            }
+        }
+        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 3)
+        {
+            break;
+        }
+
+        closing();
+        window1.clear();
+        window1.draw(menu1);
+        window1.draw(menu2[1]);
+        window1.draw(menu2[2]);
+        window1.draw(menu2[3]);
+        window1.display();
+
+    }
+}
+
+
+//Level 1.
+void Level1()
+{
+
     window1.setFramerateLimit(40);
 
-    //rings.
-    ring.loadFromFile("rings.png");
-    for (int i = 1; i <= 99; i++)
-    {
-        ring1[i].setTexture(ring);
-        ring1[i].setPosition(ring_starting_position = ring_starting_position+ 50 , 270);
-    }
-    
-    //Character first position.
-    sonic.loadFromFile("sonic.png");
-    sonic1.setTexture(sonic);
-    sonic1.setPosition(10, 380);
-
     //background.
-    background.loadFromFile("background.jpg");
-    background1.setTexture(background);
+    background_level_1.loadFromFile("Sprites/background.jpg");
+    background_level1_1.setTexture(background_level_1);
 
     //Level 1 background music.
     Sound Level1_background;
     SoundBuffer  Level1_background1;
-    Level1_background1.loadFromFile("Green Hill Zone.ogg");
+    Level1_background1.loadFromFile("Music/Green Hill Zone.ogg");
     Level1_background.setBuffer(Level1_background1);
     Level1_background.play();
+    Level1_background.setLoop(true);
 
-    //ring sound.
-    sound.loadFromFile("Mario-coin-sound.wav");
-    coin_sound.setBuffer(sound);
-   
-    //character movement.
-    enum character {down, up, left=6, right};
-    int mover = 0, moveu = 0, moved = 0;
-
+    
     while (window1.isOpen())
     {
-        //first position.
-        sonic1.setTextureRect(IntRect(120 , 0, 120, 155));
-       
+        
         //closing window.
-        Event event;
-        while (window1.pollEvent(event))
-        {
-            if (event.type == Event::Closed)
-                window1.close();
-           
+        closing();
 
-        }
+        //using moving function.
+        moving();
        
-        //moving right.
-        if (Keyboard::isKeyPressed(Keyboard::Right))
-        {
-            sonic1.move(15.0f, 0.0f);
-
-            sonic1.setTextureRect(IntRect(120+ mover*120, 155*3, 120, 155));
-            mover++;
-            if (mover == 14)
-                mover = 7;
-        }
-       
-        //jumping.
-        if (Keyboard::isKeyPressed(Keyboard::Up))
-        {
-            if (sonic1.getPosition().y == ground )
-                sonic1.move(0.0f, jumpforce);
-            sonic1.setTextureRect(IntRect(120*7+50 + moveu* 120,  155*7 , 120, 155));
-            moveu++;
-            if (moveu == 6)
-                moveu = 4;
-        }
-
-        //spin .
-        if (Keyboard::isKeyPressed(Keyboard::Down))
-        {
-            sonic1.setTextureRect(IntRect(80+ moved * 120, 155 * 6,80, 155));
-            moved++;
-            if (moved >= 9)
-                moved = 7;
-        }
-
-        //spin daash.
-        if (event.type == Event::KeyReleased)
-        {
-            if ((event.key.code == Keyboard::Down)&& moved>=5)
-            { 
-                sonic1.setTextureRect(IntRect(120 - 30 + 8 * 120, 155 * 6, 120, 155));
-                sonic1.move(10, 0);
-                moved = 0;
-            }
-        }
-
-        //gravity
-        if (sonic1.getPosition().y < ground)
-        {
-            sonic1.move(0, gravity);
-        }
-
-        //rings line.
+        //rings positions in lvl 1.
         ring1[1].setTextureRect(IntRect(ring_rect * 64, 0, 64, 64));
         ring_rect++;
         if (ring_rect >= 10)
         {
             ring_rect = 1;
         }
-        for (int i=2; i<=99; i++)
-        ring1[i].setTextureRect(IntRect(ring_rect * 64, 0, 64, 64));
+        for (int i = 2; i <= 99; i++)
+            ring1[i].setTextureRect(IntRect(ring_rect * 64, 0, 64, 64));
+
 
         //using ring collision function on the array of rings.
         ring1[collision(ring1)].setPosition(-100, -100);
 
-        //background scrolling.
-        if (sonic1.getPosition().x >= 400)
-        {
-            background1.move(-10, 0);
-            sonic1.move(-15, 0);
-            for (int i = 1; i < 100; i++)
-            {
-                ring1[i].move(-10, 0);
-            }
 
-        }
+        //using background scrolling function.
+        backgroundscroll(background_level1_1);
        
+
         //drawing.
         window1.clear();
-        window1.draw(background1);
-        for (int i = 1; i <= num_of_rings; i++)
+        window1.draw(background_level1_1);
+        for (int i = 1; i <= 99; i++)
         {
             window1.draw(ring1[i]);
         }
         window1.draw(sonic1);
         window1.display();
     }
+}
+
+
+//main game.
+int main()
+{
+    //rings.
+    ring.loadFromFile("Sprites/rings.png");
+    for (int i = 1; i <= 99; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position + 50, 270);
+    }
+
+    //Game font.
+    font.loadFromFile("Raisin Bread.ttf");
+
+    //ring sound.
+    coin_sound1.loadFromFile("Music/Mario-coin-sound.wav");
+    coin_sound.setBuffer(coin_sound1);
+
+    //Character first position.
+    sonic.loadFromFile("sonic.png");
+    sonic1.setTexture(sonic);
+    sonic1.setPosition(10, ground);
+
+    //titlescreen.
+    titlescreenfunc();
+
+    //menuscreen.
+    menufunc();
+
+    //level 1 start.
+    if (lvl1)
+        Level1();
+    ringcount = 0;
+
 }
