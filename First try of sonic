@@ -9,24 +9,26 @@ using namespace sf;
 
 
 //variables.
-Sound  titlescreen_music,  menu_music, coin_sound;
+Sound  titlescreen_music, menu_music, coin_sound;
 SoundBuffer  titlescreen_music1, menu_music1, coin_sound1;
-Texture titlescreen, menu, background_level_1,  ring, sonic, enemies;
-Sprite titlescreen1, menu1, sonic1, background_level1_1, ring1[100], enemies1[20];
+Texture titlescreen, menu, background_level_1, ring, sonic, enemies;
+Sprite titlescreen1, menu1, sonic1, background_level1[6], ring1[100], enemies1[20];
 Font font;
 Event event2, event3, event4;
 Text menu2[5], currname, nom, scr, nam;
-const float gravity = 10, ground = 400, jumpforce = -190;
-float time1 = 0;
-int  ring_rect = 1, ring_starting_position = 500, constantfalling = 0, jumpmaxheight = 0, ringcount = 0,
-score = 0, numofplayers, scores_count = 0, notmoving = 0, mover = 0, moveu = 0, moved = 0, timedanimation1 = 0, timedanimation2=0 , timedanimation3 = 0,
+const float gravity = 9.5, ground = 420, jumpforce = -190;
+float time1 = 0, ypos=0, yvel=0;
+int  ring_rect = 0, ring_starting_position = 500, constantfalling = 0, jumpmaxheight = 0, ringcount = 0,
+score = 0, numofplayers, scores_count = 0, notmoving = 0, mover = 0, moveu = 0, moved = 0, movel = 0,
+timedanimation1 = 0, timedanimation2 = 0, timedanimation3 = 0, timedanimation4 = 0,
 sspritearr[50] = { 178,68,248, 67,317, 66,385 ,67,454, 67,523 ,67,594,
                    73,670 ,67,741 ,69,815 ,78, 899 ,77,980 ,79,1062 ,91,
                    1156 ,91,1251 ,88,1345 ,86,1439 ,86,1531 ,63,1602 ,63 },
     dashspritearr[20] = { 543, 66, 612, 69, 699, 70, 775, 68, 849, 67, 920, 67, 991, 68, 1062, 68 },
     uspritearr[20] = { 1156, 67, 1234, 71, 1319, 68, 1397, 70, 1487, 70 },
-    rspritearr[40] = { 36, 74, 117, 70, 194, 74, 276, 72, 393, 77, 472, 76, 550, 78, 630, 79, 743, 95, 842, 95, 941, 95, 1039, 95 };
-bool  men = 0, lvl1 = 0, lvl2 = 0, lvl3=0, booly=0;
+    rspritearr[40] = { 36, 74, 117, 70, 194, 74, 276, 72, 393, 77, 472, 76, 550, 78, 630, 79, 743, 95, 842, 95, 941, 95, 1039, 95 },
+    ringspritearr[30] = {7, 56, 74, 52, 142, 44, 210, 35, 279, 25, 348, 16, 405, 25, 464, 35, 523, 44, 584, 52};
+bool  men = 0, lvl1 = 0, lvl2 = 0, lvl3 = 0, booly = 0;
 
 
 struct scores
@@ -40,9 +42,22 @@ scores players[100];
 scores currscore;
 
 
-
 //window settings.
 RenderWindow window1(VideoMode(1000, 550), "Mario");
+
+
+//rings animation function to call in all levels.
+void ringsanimation()
+{
+    
+    ring_rect += 2;
+    if (ring_rect == 20)
+    {
+        ring_rect = 0;
+    }
+    for (int i = 1; i <= 99; i++)
+        ring1[i].setTextureRect(IntRect(ringspritearr[ring_rect], 5, ringspritearr[ring_rect + 1], 56));
+}
 
 
 //closing window.
@@ -59,13 +74,14 @@ void closing()
     }
 }
 
+
 //background scrolling.
-void backgroundscroll(Sprite background)
+void backgroundscroll(int x)
 {
     //background scrolling.
     if (sonic1.getPosition().x >= 400)
     {
-        background.move(-10, 0);
+        background_level1[x].move(-10, 0);
         sonic1.move(-15, 0);
         for (int i = 1; i < 100; i++)
         {
@@ -79,105 +95,125 @@ void backgroundscroll(Sprite background)
 //moving character func.
 void moving()
 {
-       if (!Keyboard::isKeyPressed(Keyboard::Right))
+    if (!Keyboard::isKeyPressed(Keyboard::Right))
+    {
+        mover = 0;
+        timedanimation2 = 0;
+    }
+    if (!Keyboard::isKeyPressed(Keyboard::Left))
+    {
+        movel = 0;
+        timedanimation4 = 0;
+    }
+
+    if (!Keyboard::isKeyPressed(Keyboard::Up) && sonic1.getPosition().y == ground)
+    {
+        moveu = 0;
+    }
+
+    if (!Keyboard::isKeyPressed(Keyboard::Down))
+    {
+        moved = 0;
+    }
+
+
+    //first position.
+    timedanimation1++;
+    sonic1.setTextureRect(IntRect(sspritearr[notmoving], 176, sspritearr[notmoving + 1], 94));
+    timedanimation3++;
+    if (timedanimation3 == 20)
+    {
+        if (timedanimation1 > 0)
+            notmoving += 2;
+        if (notmoving == 10 && timedanimation1 <= 20)
+            notmoving = 6;
+        else if (notmoving == 22 && timedanimation1 <= 80)
+            notmoving = 16;
+        else if (notmoving == 34)
+            notmoving = 24;
+        timedanimation3 = 0;
+    }
+
+    //moving left.
+    if (Keyboard::isKeyPressed(Keyboard::Left))
+    {
+        sonic1.setScale(-1.f, 1.f);
+        timedanimation1 = -100;
+        notmoving = 0;
+        if (sonic1.getPosition().x > 85)
+        sonic1.move(-15.0f, 0.0f);
+            timedanimation4++;
+        sonic1.setTextureRect(IntRect(rspritearr[movel], 863, rspritearr[movel + 1], 86));
+        movel += 2;
+        if (movel == 8 && timedanimation4 <= 20)
+            movel = 0;
+        else if (movel == 16 && timedanimation4 <= 50)
+            movel = 8;
+        else if (movel == 24)
+            movel = 16;
+    }
+
+    //moving right.
+    if (Keyboard::isKeyPressed(Keyboard::Right))
+    {
+        sonic1.setScale(1.f, 1.f);
+        sonic1.move(15.0f, 0.0f);
+        timedanimation1 = -100;
+        notmoving = 0;
+        timedanimation2++;
+        sonic1.setTextureRect(IntRect(rspritearr[mover], 863, rspritearr[mover + 1], 86));
+        mover += 2;
+        if (mover == 8 && timedanimation2 <= 20)
+            mover = 0;
+        else if (mover == 16 && timedanimation2 <= 50)
+            mover = 8;
+        else if (mover == 24)
+            mover = 16;
+    }
+
+    //spin .
+    if (Keyboard::isKeyPressed(Keyboard::Down))
+    {
+        notmoving = 0;
+        timedanimation1 = -100;
+        sonic1.setTextureRect(IntRect(uspritearr[moved], 337, uspritearr[moved + 1], 70));
+        moved += 2;
+        if (moved == 10)
         {
-           mover = 0;
-           timedanimation2 = 0;
+            moved = 0;
+
         }
+    }
 
-       if (!Keyboard::isKeyPressed(Keyboard::Up))
-       {
-           moveu = 0;  
-       }
-
-       if (!Keyboard::isKeyPressed(Keyboard::Down))
-       {
-           moved = 0;
-       }
+    //jumping.
+    if (Keyboard::isKeyPressed(Keyboard::Up))
+    {
+        notmoving = 0;
+        timedanimation1 = -100;
+        yvel += 1;
+        ypos += yvel;
         
+    }
+    if (sonic1.getPosition().y < ground)
+    {
+        sonic1.setTextureRect(IntRect(uspritearr[moveu], 337, uspritearr[moveu + 1], 70));
+        moveu += 2;
+        if (moveu == 10)
+            moveu = 0;
+    }
 
-        //first position.
-          timedanimation1++;
-         sonic1.setTextureRect(IntRect(sspritearr[notmoving], 176, sspritearr[notmoving + 1], 94));
-         timedanimation3++;
-         if (timedanimation3 == 20)
-         {
-             if (timedanimation1>0)
-             notmoving += 2;
-             if (notmoving == 10 && timedanimation1 <= 20 )
-                 notmoving = 6;
-             else if (notmoving == 22 && timedanimation1 <= 80)
-                 notmoving = 16;
-             else if (notmoving == 34)
-                 notmoving = 24;
-             timedanimation3 = 0;
-         }
-    
-   
-
-        //moving right.
-        if (Keyboard::isKeyPressed(Keyboard::Right))
-        {
-            timedanimation1 = -100;
-            notmoving = 0;
-            sonic1.move(15.0f, 0.0f);
-            timedanimation2++;
-            sonic1.setTextureRect(IntRect(rspritearr[mover], 863 , rspritearr[mover+1] , 85));
-            mover+=2;
-            if (mover == 8 && timedanimation2 <= 20)
-                mover = 0;
-            else if (mover == 16 && timedanimation2 <= 50)
-                mover = 8;
-            else if (mover == 24)
-                mover = 16;
+    //gravity.
+    if (ypos > ground)
+        yvel = -22;
+    if (!Keyboard::isKeyPressed(Keyboard::Up)) {
+        if (ypos <= ground) {
+            ypos = sonic1.getPosition().y;
+            yvel += 1;
+            ypos += yvel;
         }
+    }
 
-        //spin .
-        if (Keyboard::isKeyPressed(Keyboard::Down))
-        {
-            notmoving = 0;
-            timedanimation1 = -100;
-            sonic1.setTextureRect(IntRect(uspritearr[moved], 337, uspritearr[moved + 1], 70));
-                moved += 2;
-                if (moved == 10)
-                {
-                    moved = 0;
-               
-                }
-        }
-
-        //jumping.
-        if (Keyboard::isKeyPressed(Keyboard::Up))
-        {
-            notmoving = 0;
-            timedanimation1 = -100;
-            if (sonic1.getPosition().y == ground)
-                for (int i = 0; i < 380; i++)
-                    sonic1.move(0, -0.5);
-
-            sonic1.setTextureRect(IntRect(uspritearr[moveu], 337, uspritearr[moveu+1], 70));
-            moveu+=2;
-            if (moveu == 10)
-                moveu = 0;
-
-        }
-
-
-        //gravity
-
-        if (sonic1.getPosition().y < ground)
-        {
-            if (sonic1.getPosition().y >= ground + jumpforce || jumpmaxheight == 1)
-            {
-                jumpmaxheight = 1;
-                sonic1.move(0, gravity);           
-            }
-        }
-
-        if (sonic1.getPosition().y == ground)
-        {
-            jumpmaxheight = 0;
-        }
+    sonic1.setPosition(sonic1.getPosition().x, ypos);
 
 }
 
@@ -196,7 +232,7 @@ void startfunc()
     currname.setStyle(Text::Underlined);
     currname.setFillColor(Color(173, 148, 55));
 
-    while (!Keyboard::isKeyPressed(Keyboard::Enter))
+    while (!Keyboard::isKeyPressed(Keyboard::Enter) )
     {
         booly = 1;
         if (Keyboard::isKeyPressed(Keyboard::Escape))
@@ -289,6 +325,10 @@ void startfunc()
                 case Keyboard::Z:
                     currscore.name.push_back('Z');
                     break;
+                case Keyboard::BackSpace:
+                    currscore.name.clear();
+                    break;
+
                 }
             }
             window1.clear();
@@ -369,8 +409,10 @@ void menufunc()
 {
 
     int p = 0, t = 0;
+
     menu.loadFromFile("Sprites/menu.jpg");
     menu1.setTexture(menu);
+
 
     menu2[1].setString("Start");
     menu2[1].setFont(font);
@@ -388,28 +430,59 @@ void menufunc()
 
     while (true)
     {
+        //using closing function.
         closing();
+
+        //mouse position at any time.
         Vector2i  mousep = Mouse::getPosition(window1);
- 
+
+        //to prevent key repeatation.
         t++;
         if (t == 150)
             t = 0;
-            if (Keyboard::isKeyPressed(Keyboard::Down) && t==120)
-            {
-                    p++;
-                    if (p == 4)
-                        p = 1;
-                    menu2[p].setFillColor(Color::Red);
-            }
-            else if (Keyboard::isKeyPressed(Keyboard::Up) && t == 120)
-            {
-                p--;
-                if (p == 0)
-                    p = 3;
-                menu2[p].setFillColor(Color::Red);
-            }
-        
 
+        //moving between options in menu.
+        if (Keyboard::isKeyPressed(Keyboard::Down) && t == 120)
+        {
+            p++;
+            if (p == 4)
+                p = 1;
+            menu2[p].setFillColor(Color::Red);
+        }
+        else if (Keyboard::isKeyPressed(Keyboard::Up) && t == 120)
+        {
+            p--;
+            if (p == 0)
+                p = 3;
+            menu2[p].setFillColor(Color::Red);
+        }
+
+        //when space is pressed after selecting an option.
+        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 1)
+        {
+            startfunc();
+            if (booly == 1)
+            {
+                lvl1 = 1;
+                titlescreen_music.stop();
+                break;
+            }
+        }
+        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 2)
+        {
+            while (!Keyboard::isKeyPressed(Keyboard::Escape))
+            {
+                window1.clear();
+                window1.draw(menu1);
+                window1.display();
+            }
+        }
+        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 3)
+        {
+            break;
+        }
+
+        //when using mouse to select any option in menu.
         if ((mousep.x >= 10 && mousep.x <= 150) && (mousep.y >= 300 && mousep.y <= 350))
         {
             p = 0;
@@ -448,30 +521,30 @@ void menufunc()
                 scr.setFont(font);
                 scr.setCharacterSize(20);
                 scr.setFillColor(Color::White);
-                int   xpos=0, ypos=0;
-                    stats();
-                    window1.clear();
-                    window1.draw(menu1);
+                int   xpos = 0, ypos = 0;
+                stats();
+                window1.clear();
+                window1.draw(menu1);
+                window1.display();
+                for (int l = 0; l < scores_count; l++)
+                {
+                    nom.setString(players[l].num);
+                    nam.setString(players[l].name);
+                    scr.setString(players[l].scored);
+                    nom.setPosition(xpos, ypos);
+                    xpos += 200;
+                    nam.setPosition(xpos, ypos);
+                    xpos += 200;
+                    scr.setPosition(xpos, ypos);
+
+                    window1.draw(nom);
+                    window1.draw(nam);
+                    window1.draw(scr);
                     window1.display();
-                    for (int l = 0; l < scores_count; l++)
-                    {
-                        nom.setString(players[l].num);
-                        nam.setString(players[l].name);
-                        scr.setString(players[l].scored);
-                        nom.setPosition(xpos, ypos);
-                        xpos += 200;
-                        nam.setPosition(xpos, ypos);
-                        xpos += 200;
-                        scr.setPosition(xpos, ypos);
-                        
-                        window1.draw(nom);
-                        window1.draw(nam);
-                        window1.draw(scr);
-                        window1.display();
-                        ypos += 30;
-                        xpos = 0;
-                        
-                    }
+                    ypos += 30;
+                    xpos = 0;
+
+                }
                 while (!Keyboard::isKeyPressed(Keyboard::Escape))
                 {
                 }
@@ -504,38 +577,12 @@ void menufunc()
         }
 
 
-        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 1)
-        {
-            startfunc();
-            if (booly == 1)
-            {
-                lvl1 = 1;
-                titlescreen_music.stop();
-                break;
-            }
-        }
-        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 2)
-        {
-            while (!Keyboard::isKeyPressed(Keyboard::Escape))
-            {
-                window1.clear();
-                window1.draw(menu1);
-                window1.display();
-            }
-        }
-        if (Keyboard::isKeyPressed(Keyboard::Space) && p == 3)
-        {
-            break;
-        }
-
-        closing();
         window1.clear();
         window1.draw(menu1);
         window1.draw(menu2[1]);
         window1.draw(menu2[2]);
         window1.draw(menu2[3]);
         window1.display();
-
     }
 }
 
@@ -547,49 +594,41 @@ void Level1()
     window1.setFramerateLimit(40);
 
     //background.
-    background_level_1.loadFromFile(background.jpg");
-    background_level1_1.setTexture(background_level_1);
+    background_level_1.loadFromFile("Sprites/background.jpg");
+    background_level1[1].setTexture(background_level_1);
+    
 
     //Level 1 background music.
     Sound Level1_background;
     SoundBuffer  Level1_background1;
-    Level1_background1.loadFromFile("Green Hill Zone.ogg");
+    Level1_background1.loadFromFile("Music/Green Hill Zone.ogg");
     Level1_background.setBuffer(Level1_background1);
     Level1_background.play();
     Level1_background.setLoop(true);
 
-    
+
     while (window1.isOpen())
     {
-        
+
         //closing window.
         closing();
 
         //using moving function.
         moving();
+        
+        ringsanimation();
        
-        //rings positions in lvl 1.
-        ring1[1].setTextureRect(IntRect(ring_rect * 64, 0, 64, 64));
-        ring_rect++;
-        if (ring_rect >= 10)
-        {
-            ring_rect = 1;
-        }
-        for (int i = 2; i <= 99; i++)
-            ring1[i].setTextureRect(IntRect(ring_rect * 64, 0, 64, 64));
-
-
         //using ring collision function on the array of rings.
         ring1[collision(ring1)].setPosition(-100, -100);
 
 
         //using background scrolling function.
-        backgroundscroll(background_level1_1);
-       
+        backgroundscroll(1);
+
 
         //drawing.
         window1.clear();
-        window1.draw(background_level1_1);
+        window1.draw(background_level1[1]);
         for (int i = 1; i <= 99; i++)
         {
             window1.draw(ring1[i]);
@@ -604,7 +643,7 @@ void Level1()
 int main()
 {
     //rings.
-    ring.loadFromFile("rings.png");
+    ring.loadFromFile("Sprites/rings.png");
     for (int i = 1; i <= 99; i++)
     {
         ring1[i].setTexture(ring);
@@ -615,13 +654,13 @@ int main()
     font.loadFromFile("Raisin Bread.ttf");
 
     //ring sound.
-    coin_sound1.loadFromFile("Mario-coin-sound.wav");
+    coin_sound1.loadFromFile("Music/Mario-coin-sound.wav");
     coin_sound.setBuffer(coin_sound1);
 
     //Character first position.
-    sonic.loadFromFile("sonic.png");
+    sonic.loadFromFile("Sprites/sonic.png");
     sonic1.setTexture(sonic);
-    sonic1.setPosition(10, ground);
+    sonic1.setPosition(15, ground);
 
     //titlescreen.
     titlescreenfunc();
@@ -630,8 +669,8 @@ int main()
     menufunc();
 
     //level 1 start.
-    if (lvl1)
+     if (lvl1)
         Level1();
-    ringcount = 0;
+    //ringcount = 0;
 
 }
