@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 
+
 using namespace std;
 using namespace sf;
 
@@ -15,10 +16,10 @@ Texture titlescreen, menu, background_level_1, ring, sonic, enemies;
 Sprite titlescreen1, menu1, sonic1, background_level1[6], ring1[100], enemies1[20];
 Font font;
 Event event2, event3, event4;
-Text menu2[5], currname, nom, scr, nam;
+Text menu2[5], currname, nom, scr, nam, scoretrack, ringstrack, scoretext, ringstext;
 const float gravity = 9.5, ground = 420, jumpforce = -190;
 float time1 = 0, ypos=0, yvel=0;
-int  ring_rect = 0, ring_starting_position = 500, constantfalling = 0, jumpmaxheight = 0, ringcount = 0,
+int  ring_rect = 0, ring_starting_position = 500, constantfalling = 0, jumpmaxheight = 0, ringcount = 0, scoredrings=0,
 score = 0, numofplayers, scores_count = 0, notmoving = 0, mover = 0, moveu = 0, moved = 0, movel = 0,
 timedanimation1 = 0, timedanimation2 = 0, timedanimation3 = 0, timedanimation4 = 0,
 sspritearr[50] = { 178,68,248, 67,317, 66,385 ,67,454, 67,523 ,67,594,
@@ -33,9 +34,9 @@ bool  men = 0, lvl1 = 0, lvl2 = 0, lvl3 = 0, booly = 0;
 
 struct scores
 {
-    string num;
+    int num;
     string name;
-    string scored;
+    int scored;
 
 };
 scores players[100];
@@ -75,8 +76,38 @@ void closing()
 }
 
 
-//background scrolling.
-void backgroundscroll(int x)
+//score and rings tracking function.
+void scoreandrings()
+{
+    scoretext.setFont(font);
+    scoretext.setCharacterSize(30);
+    scoretext.setString("Score");
+    scoretext.setFillColor(Color::White);
+    scoretext.setPosition(15, 10);
+    ringstext.setFont(font);
+    ringstext.setCharacterSize(30);
+    ringstext.setString("Rings");
+    ringstext.setFillColor(Color::White);
+    ringstext.setPosition(15, 35);
+
+
+    string s1, s2;
+    s1 = to_string(scoredrings);
+    s2 = to_string(currscore.scored);
+    scoretrack.setFont(font);
+    scoretrack.setFillColor(Color::White);
+    scoretrack.setCharacterSize(30);
+    scoretrack.setString(s2);
+    scoretrack.setPosition(150, 10);
+    ringstrack.setFont(font);
+    ringstrack.setFillColor(Color::White);
+    ringstrack.setCharacterSize(30);
+    ringstrack.setString(s1);
+    ringstrack.setPosition(150, 35);
+}
+
+//background scrolling right.
+void backgroundscrollr(int x)
 {
     //background scrolling.
     if (sonic1.getPosition().x >= 400)
@@ -92,8 +123,25 @@ void backgroundscroll(int x)
 }
 
 
+//background scrolling left.
+void backgroundscrolll(int x)
+{
+    //background scrolling.
+    if (sonic1.getPosition().x <= 400 && background_level1[x].getPosition().x!=0)
+    {
+        background_level1[x].move(10, 0);
+        sonic1.move(15, 0);
+        for (int i = 1; i < 100; i++)
+        {
+            ring1[i].move(10, 0);
+        }
+
+    }
+}
+
+
 //moving character func.
-void moving()
+void moving(int x)
 {
     if (!Keyboard::isKeyPressed(Keyboard::Right))
     {
@@ -140,7 +188,7 @@ void moving()
         sonic1.setScale(-1.f, 1.f);
         timedanimation1 = -100;
         notmoving = 0;
-        if (sonic1.getPosition().x > 85)
+        if (background_level1[x].getPosition().x!=0)
         sonic1.move(-15.0f, 0.0f);
             timedanimation4++;
         sonic1.setTextureRect(IntRect(rspritearr[movel], 863, rspritearr[movel + 1], 86));
@@ -326,7 +374,7 @@ void startfunc()
                     currscore.name.push_back('Z');
                     break;
                 case Keyboard::BackSpace:
-                    currscore.name.clear();
+                    currscore.name.pop_back();
                     break;
 
                 }
@@ -349,6 +397,8 @@ bool collision(Sprite ring[])
         if (sonic1.getGlobalBounds().intersects(ring[i].getGlobalBounds()))
         {
             coin_sound.play();
+            scoredrings++;
+            currscore.scored += 100;
             ring[i].setPosition(-1000, -1000);
             ringcount++;
             return i;
@@ -521,33 +571,12 @@ void menufunc()
                 scr.setFont(font);
                 scr.setCharacterSize(20);
                 scr.setFillColor(Color::White);
-                int   xpos = 0, ypos = 0;
-                stats();
+             
+                
                 window1.clear();
                 window1.draw(menu1);
                 window1.display();
-                for (int l = 0; l < scores_count; l++)
-                {
-                    nom.setString(players[l].num);
-                    nam.setString(players[l].name);
-                    scr.setString(players[l].scored);
-                    nom.setPosition(xpos, ypos);
-                    xpos += 200;
-                    nam.setPosition(xpos, ypos);
-                    xpos += 200;
-                    scr.setPosition(xpos, ypos);
-
-                    window1.draw(nom);
-                    window1.draw(nam);
-                    window1.draw(scr);
-                    window1.display();
-                    ypos += 30;
-                    xpos = 0;
-
-                }
-                while (!Keyboard::isKeyPressed(Keyboard::Escape))
-                {
-                }
+               
             }
         }
         else
@@ -606,6 +635,7 @@ void Level1()
     Level1_background.play();
     Level1_background.setLoop(true);
 
+    
 
     while (window1.isOpen())
     {
@@ -614,7 +644,7 @@ void Level1()
         closing();
 
         //using moving function.
-        moving();
+        moving(1);
         
         ringsanimation();
        
@@ -622,8 +652,14 @@ void Level1()
         ring1[collision(ring1)].setPosition(-100, -100);
 
 
-        //using background scrolling function.
-        backgroundscroll(1);
+        //using background scrolling right function.
+        backgroundscrollr(1);
+
+        //using background scrolling left function.
+        backgroundscrolll(1);
+
+        //trackig of rings and score.
+        scoreandrings();
 
 
         //drawing.
@@ -634,6 +670,10 @@ void Level1()
             window1.draw(ring1[i]);
         }
         window1.draw(sonic1);
+        window1.draw(scoretext);
+        window1.draw(ringstext);
+        window1.draw(scoretrack);
+        window1.draw(ringstrack);
         window1.display();
     }
 }
@@ -669,8 +709,7 @@ int main()
     menufunc();
 
     //level 1 start.
-     if (lvl1)
+    if (lvl1)
         Level1();
-    //ringcount = 0;
-
+       
 }
