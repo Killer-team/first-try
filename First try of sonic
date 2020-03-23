@@ -10,30 +10,33 @@ using namespace sf;
 
 
 //variables.
-Sound  titlescreen_music, menu_music, coin_sound, Level1_background;
-SoundBuffer  titlescreen_music1, menu_music1, coin_sound1, Level1_background1;
-Texture titlescreen, menu, background_level_1, ring, sonic, enemies;
-Sprite titlescreen1, menu1, sonic1, background_level1[6], ring1[100], enemies1[20];
+Sound  titlescreen_music, menu_music, coin_sound, Level1_music, bossfight_music;
+SoundBuffer  titlescreen_music1, menu_music1, coin_sound1, Level1_music1, bossfight1_music;
+Texture titlescreen, menu, background_level_1, ring, sonic, enemies, boss;
+Sprite titlescreen1, menu1, sonic1, background_level1[6], ring1[100], enemies1[20], boss1, bossCar1, bossE, bossM;
 Font font;
 Event event2, event3, event4;
 Text menu2[5], currname, nom, scr, nam, scoretrack, ringstrack, scoretext, ringstext;
 const float  ground = 420;
-float time1 = 0, ypos=0, yvel=0;
-int  ring_rect = 0, ring_starting_position = 500, scoredrings=0,
+float time1 = 0, ypos = 0, yvel = 0, bossspeed = 0;
+int  ring_rect = 0, ring_starting_position = 500, scoredrings = 0,
 score = 0, numofplayers, scores_count = 0, notmoving = 0, mover = 0, moveu = 0, moved = 0, movel = 0,
 timedanimation1 = 0, timedanimation2 = 0, timedanimation3 = 0, timedanimation4 = 0,
+bosscount = 0, bossCarcount = 0, bossEcount = 0, y = 0, bossMcount = 0, bosshit = 0, bosslives = 30,
 sspritearr[50] = { 178,68,248, 67,317, 66,385 ,67,454, 67,523 ,67,594,
                    73,670 ,67,741 ,69,815 ,78, 899 ,77,980 ,79,1062 ,91,
                    1156 ,91,1251 ,88,1345 ,86,1439 ,86,1531 ,63,1602 ,63 },
     dashspritearr[20] = { 543, 66, 612, 69, 699, 70, 775, 68, 849, 67, 920, 67, 991, 68, 1062, 68 },
     uspritearr[20] = { 1156, 67, 1234, 71, 1319, 68, 1397, 70, 1487, 70 },
     rspritearr[40] = { 36, 74, 117, 70, 194, 74, 276, 72, 393, 77, 472, 76, 550, 78, 630, 79, 743, 95, 842, 95, 941, 95, 1039, 95 },
-    ringspritearr[30] = {7, 56, 74, 52, 142, 44, 210, 35, 279, 25, 348, 16, 405, 25, 464, 35, 523, 44, 584, 52};
-    
-    
-    
-    
-bool   lvl1 = 0, lvl2 = 0, lvl3 = 0, booly = 0;
+    ringspritearr[30] = { 7, 56, 74, 52, 142, 44, 210, 35, 279, 25, 348, 16, 405, 25, 464, 35, 523, 44, 584, 52 },
+    bossarr[6] = { 596, 202, 840, 244 },  bossCararr[6] = { 18, 248, 309, 247 },  bossEarr[16] = { 31, 329, 381, 294, 711, 261, 1024, 248, 1307, 247 },
+    bossMarr[16] = { 41, 247, 326, 247, 604, 246, 899, 246, 1185, 247 },  bosscollarr[6] = { 42, 246, 320, 247 };
+
+
+
+
+bool   lvl1 = 0, lvl2 = 0, lvl3 = 0, booly = 0, bossreachl = 0, bossreachr = 1, baby=0;
 
 
 struct scores
@@ -48,13 +51,109 @@ scores currscore;
 
 
 //window settings.
-RenderWindow window1(VideoMode(1000, 550), "Mario");
+RenderWindow window1(VideoMode(1000, 550), "Sonic The Hedgehog");
+
+
+//boss entering with egg.
+void BossEntrance() {
+
+    boss1.setTextureRect(IntRect(bossarr[bosscount], 28, bossarr[bosscount + 1], 132));
+    bosscount += 2;
+    boss1.setPosition(686, 100);
+    if (bosscount == 4) {
+        bosscount = 0;
+        boss1.setPosition(750, 100);
+    }
+
+    if (y != 245) {
+        y += 5;
+    }
+    boss1.move(0, y);
+
+    bossCar1.setTextureRect(IntRect(bossCararr[bossCarcount], 75, bossCararr[bossCarcount + 1], 162));
+    bossCarcount += 2;
+
+    if (bossCarcount == 4) {
+        bossCarcount = 0;
+
+    }
+}
+
+
+//car entrance.
+void BossEntrance2() {
+
+    bossE.setTextureRect(IntRect(bossEarr[bossEcount], 216, bossEarr[bossEcount + 1], 158));
+    bossE.setPosition(655, 350);
+    bossEcount += 2;
+}
+
+
+//boss movement.
+void BossMovemnt()
+{
+    if (!sonic1.getGlobalBounds().intersects(bossM.getGlobalBounds()))
+    {
+        bossM.setTextureRect(IntRect(bossMarr[bossMcount], 434, bossMarr[bossMcount + 1], 136));
+        bossMcount += 2;
+        if (bossMcount == 10)
+        {
+            bossMcount = 6;
+        }
+    }
+
+    if (bossreachl == 0)
+    {
+        bossspeed -= 0.5;
+        bossM.move(bossspeed, 0);
+    }
+
+
+    if (bossM.getPosition().x <= 60)
+    {
+        bossM.setScale(-1, 1);
+        bossM.move(200, 0);
+        bossreachl = 1;
+        bossreachr = 0;
+        bossspeed = 0;
+    }
+
+
+    if (bossreachr == 0)
+    {
+        bossspeed += 0.5;
+        bossM.move(bossspeed, 0);
+    }
+
+
+    if (bossM.getPosition().x >= 963)
+    {
+        bossM.setScale(1, 1);
+        bossM.move(-200, 0);
+        bossreachl = 0;
+        bossreachr = 1;
+        bossspeed = 0;
+    }
+
+    if (sonic1.getGlobalBounds().intersects(bossM.getGlobalBounds()) && sonic1.getPosition().y<bossM.getPosition().y)
+    {
+        bossM.setTextureRect(IntRect(bosscollarr[bosshit], 620, bosscollarr[bosshit + 1], 154));
+        bosshit += 2;
+        if (bosshit == 4)
+        {
+            bosshit = 0;
+        }
+        yvel = -15;
+        bosslives--;
+    }
+
+}
 
 
 //rings animation function to call in all levels.
 void ringsanimation()
 {
-    
+
     ring_rect += 2;
     if (ring_rect == 20)
     {
@@ -132,7 +231,7 @@ void backgroundscrollr(int x)
 void backgroundscrolll(int x)
 {
     //background scrolling.
-    if (sonic1.getPosition().x <= 400 && background_level1[x].getPosition().x!=0)
+    if (sonic1.getPosition().x <= 400 && background_level1[x].getPosition().x != 0)
     {
         background_level1[x].move(10, 0);
         sonic1.move(15, 0);
@@ -193,9 +292,14 @@ void moving(int x)
         sonic1.setScale(-1.f, 1.f);
         timedanimation1 = -100;
         notmoving = 0;
-        if (background_level1[x].getPosition().x!=0)
-        sonic1.move(-15.0f, 0.0f);
-            timedanimation4++;
+        if (background_level1[x].getPosition().x != 0)
+            sonic1.move(-15.0f, 0.0f);
+
+        if (background_level1[1].getPosition().x == -15000 && sonic1.getPosition().x <= 80)
+        {
+            sonic1.move(15.0f, 0.0f);
+        }
+        timedanimation4++;
         sonic1.setTextureRect(IntRect(rspritearr[movel], 863, rspritearr[movel + 1], 86));
         movel += 2;
         if (movel == 8 && timedanimation4 <= 20)
@@ -211,6 +315,10 @@ void moving(int x)
     {
         sonic1.setScale(1.f, 1.f);
         sonic1.move(15.0f, 0.0f);
+        if (background_level1[1].getPosition().x == -15000 && sonic1.getPosition().x >= 920)
+        {
+           sonic1.move(-15.0f, 0.0f);
+        }
         timedanimation1 = -100;
         notmoving = 0;
         timedanimation2++;
@@ -244,7 +352,7 @@ void moving(int x)
         timedanimation1 = -100;
         yvel += 1;
         ypos += yvel;
-        
+
     }
 
     if (sonic1.getPosition().y < ground)
@@ -258,6 +366,8 @@ void moving(int x)
     //gravity.
     if (ypos > ground)
         yvel = -22;
+
+
     if (!Keyboard::isKeyPressed(Keyboard::Up)) {
         if (ypos <= ground) {
             ypos = sonic1.getPosition().y;
@@ -285,7 +395,7 @@ void startfunc()
     currname.setStyle(Text::Underlined);
     currname.setFillColor(Color(173, 148, 55));
 
-    while (!Keyboard::isKeyPressed(Keyboard::Enter) )
+    while (!Keyboard::isKeyPressed(Keyboard::Enter))
     {
         booly = 1;
         if (Keyboard::isKeyPressed(Keyboard::Escape))
@@ -574,12 +684,12 @@ void menufunc()
                 scr.setFont(font);
                 scr.setCharacterSize(20);
                 scr.setFillColor(Color::White);
-             
-                
+
+
                 window1.clear();
                 window1.draw(menu1);
                 window1.display();
-               
+
             }
         }
         else
@@ -628,35 +738,66 @@ void Level1()
     //background.
     background_level_1.loadFromFile("Sprites/background.jpg");
     background_level1[1].setTexture(background_level_1);
-    
+
 
     //Level 1 background music.
-    Level1_background1.loadFromFile("Music/Green Hill Zone.ogg");
-    Level1_background.setBuffer(Level1_background1);
-    Level1_background.play();
-    Level1_background.setLoop(true);
+    Level1_music1.loadFromFile("Music/Green Hill Zone.ogg");
+    Level1_music.setBuffer(Level1_music1);
+    Level1_music.play();
 
-    
+    //level 1 boss fight music.
+    bossfight1_music.loadFromFile("Music/Boss.ogg");
+    bossfight_music.setBuffer(bossfight1_music);
+
+    boss.loadFromFile("Sprites/boss.png");
+    boss1.setTexture(boss);
+    boss1.setPosition(750, 100);
+    bossCar1.setTexture(boss);
+    bossCar1.setPosition(655, 420);
+    bossE.setTexture(boss);
+    bossM.setTexture(boss);
+    bossM.setPosition(655, 370);
+
 
     while (window1.isOpen())
     {
+        //using moving function.
+        moving(1);
+
+
+        //boss fight music.
+       if (background_level1[1].getPosition().x == -15000 && bossfight_music.getStatus()!=bossfight_music.Playing)
+        {
+            Level1_music.stop();
+            bossfight_music.play();
+        }
+
+        if (y != 245 && background_level1[1].getPosition().x == -15000)
+            BossEntrance();
+
+        if (y == 245 && bossEcount < 10 && background_level1[1].getPosition().x == -15000)
+            BossEntrance2();
+
+        if (bossEcount >= 10 && background_level1[1].getPosition().x == -15000 && bosslives!=0)
+            BossMovemnt();
+
+
 
         //closing window.
         closing();
 
-        //using moving function.
-        moving(1);
-        
         //animation of rings function.
         ringsanimation();
-       
+
         //using ring collision function on the array of rings.
         collision(ring1);
 
         //using background scrolling right function.
+        if (background_level1[1].getPosition().x!=-15000)
         backgroundscrollr(1);
 
         //using background scrolling left function.
+        if (background_level1[1].getPosition().x !=-15000)
         backgroundscrolll(1);
 
         //trackig of rings and score.
@@ -670,6 +811,24 @@ void Level1()
             window1.draw(ring1[i]);
         }
         window1.draw(sonic1);
+        if (y != 245 && background_level1[1].getPosition().x == -15000)
+        {
+        window1.draw(boss1);
+        window1.draw(bossCar1);
+        }
+
+        if (y == 245 && bossEcount < 10 && background_level1[1].getPosition().x == -15000)
+        {
+           window1.draw(bossE);
+        }
+        if (bosslives == 0)
+        {
+            bossM.setTextureRect(IntRect(610, 613, 230, 153));
+        }
+        if (bossEcount >= 10 && background_level1[1].getPosition().x == -15000)
+        {
+            window1.draw(bossM);
+        }
         window1.draw(scoretext);
         window1.draw(ringstext);
         window1.draw(scoretrack);
@@ -682,6 +841,7 @@ void Level1()
 //main game.
 int main()
 {
+
     //rings.
     ring.loadFromFile("Sprites/rings.png");
     for (int i = 1; i <= 99; i++)
@@ -703,13 +863,13 @@ int main()
     sonic1.setPosition(15, ground);
 
     //titlescreen.
-    titlescreenfunc();
+     titlescreenfunc();
 
     //menuscreen.
-    menufunc();
+     menufunc();
 
     //level 1 start.
-    if (lvl1)
+     if (lvl1)
         Level1();
-       
+
 }
