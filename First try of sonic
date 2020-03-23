@@ -843,11 +843,248 @@ int main()
 {
 
     //rings.
-    ring.loadFromFile("Sprites/rings.png");
-    for (int i = 1; i <= 99; i++)
+   ring.loadFromFile("Sprites/rings.png");
+    for (int i = 1; i <= 1; i++)
     {
         ring1[i].setTexture(ring);
         ring1[i].setPosition(ring_starting_position = ring_starting_position + 50, 270);
+    }
+     for (int i = 2; i <= 2; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position + 35, 210);
+    }
+     for (int i = 3; i <= 3; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position + 50, 210);
+    }
+     for (int i = 4; i <= 4; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position + 50, 270);
+    }
+      for (int i = 5; i <= 5; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position - 50, 330);
+    }
+      for (int i = 6; i <= 6; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position - 50, 330);
+    }
+     for (int i = 7; i <= 7; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +1000, 50);
+    }
+       for (int i = 8; i <= 12; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50 , 50);
+    }
+         for (int i = 13; i <= 13; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position + 1000 , 100);
+    }
+             for (int i = 14; i <= 18; i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,100);
+    }
+       for (int i = 19;i <=19;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position -50, 200);
+    }
+       for (int i = 20;i <=22;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position -50, 200);
+    }
+        for (int i = 23;i <=23;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +100, 280);
+    }
+       for (int i = 24;i <25;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position -50, 280);
+    }
+    for (int i = 26;i <27;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +950,190 );
+    }
+      for (int i = 27;i <28;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,220 );
+    }
+       for (int i = 28;i <29;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,190 );
+    }
+
+  for (int i = 29;i <30;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,220);
+    }
+ for (int i = 30;i <31;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,190);
+    }
+     for (int i = 31;i <32;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,220);
+    }
+    for (int i = 32;i <33;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,190);
+    }
+  for (int i = 33;i <34;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,220);
+    }
+    for (int i = 34;i <35;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +800,150);
+    }
+     for (int i = 35;i <40;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,150);
+    }
+      for (int i = 41;i <42;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +850,90);
+    }
+      for (int i = 43;i <44;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,70);
+    }
+      for (int i = 44;i <45;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,90);
+    }
+for (int i = 45;i <46;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,70);
+    }
+    for (int i = 46;i <47;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,90);
+    }
+      for (int i = 47;i <48;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,70);
+    }
+       for (int i = 48;i <49;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,90);
+    }
+      for (int i = 49;i <50;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +800,80);
+    }
+
+     for (int i = 50;i <60;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,80);
+    }
+for (int i = 60;i <61;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +750,400);
+    }
+      for (int i = 61;i <62;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +850,90);
+    }
+      for (int i = 63;i <64;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,70);
+    }
+      for (int i = 64;i <65;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,90);
+    }
+for (int i = 65;i <66;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +800,70);
+    }
+    for (int i = 67;i <68;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,90);
+    }
+ for (int i = 68;i <69;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,70);
+    }
+for (int i = 69;i <70;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +800,400);
+    }
+    for (int i = 70;i <75;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,400);
+    }
+  for (int i = 75;i <76;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +750,70);
+    }
+      for (int i = 76;i <77;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,90);
+    }
+  for (int i = 77;i <78;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,70);
+    }
+     for (int i = 78;i <79;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +750,90);
+    }
+      for (int i = 79;i <80;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,70);
+    }
+  for (int i = 80;i <81;i++)
+    {
+        ring1[i].setTexture(ring);
+        ring1[i].setPosition(ring_starting_position = ring_starting_position +50,90);
     }
 
     //Game font.
