@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <cstdlib>
+#include <ctime>
 
 
 using namespace std;
@@ -12,17 +14,17 @@ using namespace sf;
 //variables.
 Sound  titlescreen_music, menu_music, coin_sound, Level1_music, bossfight_music;
 SoundBuffer  titlescreen_music1, menu_music1, coin_sound1, Level1_music1, bossfight1_music;
-Texture titlescreen, menu, background_level_1, ring, sonic, enemies, boss;
-Sprite titlescreen1, menu1, sonic1, background_level1[6], ring1[100], enemies1[20], boss1, bossCar1, bossE, bossM;
+Texture titlescreen, menu, background_level_1, ring, sonic, enemy, boss;
+Sprite titlescreen1, menu1, sonic1, background_level1[6], ring1[100], enemy1[10], boss1, bossCar1, bossE, bossM;
 Font font;
 Event event2, event3, event4;
 Text menu2[5], currname, nom, scr, nam, scoretrack, ringstrack, scoretext, ringstext;
 const float  ground = 420;
-float time1 = 0, ypos = 0, yvel = 0, bossspeed = 0;
-int  ring_rect = 0, ring_starting_position = 500, scoredrings = 0,
+float time1 = 0, ypos = 0, yvel = 0, bossspeed = 0, enemySpeed=0;
+int  ring_rect = 0, ring_starting_position = 500, scoredrings = 0, xpos=1400, collided = 10,
 score = 0, numofplayers, scores_count = 0, notmoving = 0, mover = 0, moveu = 0, moved = 0, movel = 0,
 timedanimation1 = 0, timedanimation2 = 0, timedanimation3 = 0, timedanimation4 = 0,
-bosscount = 0, bossCarcount = 0, bossEcount = 0, y = 0, bossMcount = 0, bosshit = 0, bosslives = 30,
+bosscount = 0, bossCarcount = 0, bossEcount = 0, y = 0, bossMcount = 0, bosshit = 0, bosslives = 30, counter = 0,
 sspritearr[50] = { 178,68,248, 67,317, 66,385 ,67,454, 67,523 ,67,594,
                    73,670 ,67,741 ,69,815 ,78, 899 ,77,980 ,79,1062 ,91,
                    1156 ,91,1251 ,88,1345 ,86,1439 ,86,1531 ,63,1602 ,63 },
@@ -31,12 +33,9 @@ sspritearr[50] = { 178,68,248, 67,317, 66,385 ,67,454, 67,523 ,67,594,
     rspritearr[40] = { 36, 74, 117, 70, 194, 74, 276, 72, 393, 77, 472, 76, 550, 78, 630, 79, 743, 95, 842, 95, 941, 95, 1039, 95 },
     ringspritearr[30] = { 7, 56, 74, 52, 142, 44, 210, 35, 279, 25, 348, 16, 405, 25, 464, 35, 523, 44, 584, 52 },
     bossarr[6] = { 596, 202, 840, 244 },  bossCararr[6] = { 18, 248, 309, 247 },  bossEarr[16] = { 31, 329, 381, 294, 711, 261, 1024, 248, 1307, 247 },
-    bossMarr[16] = { 41, 247, 326, 247, 604, 246, 899, 246, 1185, 247 },  bosscollarr[6] = { 42, 246, 320, 247 };
+    bossMarr[16] = { 41, 247, 326, 247, 604, 246, 899, 246, 1185, 247 },  bosscollarr[6] = { 42, 246, 320, 247 }, enemies1_Cord[10] = { 184, 117, 330 ,105 ,471 ,104 };
 
-
-
-
-bool   lvl1 = 0, lvl2 = 0, lvl3 = 0, booly = 0, bossreachl = 0, bossreachr = 1, baby=0;
+bool   lvl1 = 0, lvl2 = 0, lvl3 = 0, booly = 0, bossreachl = 0, bossreachr = 1, enemyReachL = 0, enemyReachR = 1 , baby = 0;
 
 
 struct scores
@@ -44,7 +43,6 @@ struct scores
     int num;
     string name;
     int scored;
-
 };
 scores players[100];
 scores currscore;
@@ -52,6 +50,78 @@ scores currscore;
 
 //window settings.
 RenderWindow window1(VideoMode(1000, 550), "Sonic The Hedgehog");
+
+//enemy movment.
+void enemyMovement()
+{
+    
+    for (int i = 0; i < 10; i++)
+    {
+        if (sonic1.getGlobalBounds().intersects(enemy1[i].getGlobalBounds()))
+        {
+            collided = i;
+            yvel = -15;
+        }
+    }
+
+    enemy1[collided].setTextureRect(IntRect(188, 592, 106, 50));
+    enemy1[collided].setPosition(enemy1[collided].getPosition().x, ground+30);
+
+    for (int i = 0; i < 10; i++)
+    {
+        if (i!=collided)
+        enemy1[i].setTextureRect(IntRect(enemies1_Cord[counter], 229, enemies1_Cord[counter + 1], 80));
+    }
+    counter += 2;
+    if (counter == 6)
+        counter = 0;
+
+
+    for (int i = 0; i < 10; i++)
+    {
+        if (i != collided)
+        {
+            if (enemyReachL == false)
+            {
+                enemySpeed -= 0.5;
+                enemy1[i].move(enemySpeed + 0.5, 0);
+
+            }
+
+
+
+            if (enemySpeed == -50)
+            {
+                enemy1[i].setScale(-1, 1);
+                enemy1[i].move(100, 0);
+                enemyReachL = true;
+                enemyReachR = false;
+                enemySpeed = 0;
+            }
+
+
+
+            if (enemyReachR == false)
+            {
+                enemySpeed += 0.5;
+                enemy1[i].move(enemySpeed - 0.5, 0);
+            }
+
+
+
+
+            if (enemySpeed == 50)
+            {
+                enemy1[i].setScale(1, 1);
+                enemy1[i].move(-100, 0);
+                enemyReachR = true;
+                enemyReachL = false;
+                enemySpeed = 0;
+            }
+        }
+
+    }
+}
 
 
 //boss entering with egg.
@@ -222,7 +292,10 @@ void backgroundscrollr(int x)
         {
             ring1[i].move(-10, 0);
         }
-
+        for (int i = 1; i < 10; i++)
+        {
+            enemy1[i].move(-10, 0);
+        }
     }
 }
 
@@ -239,7 +312,10 @@ void backgroundscrolll(int x)
         {
             ring1[i].move(10, 0);
         }
-
+        for (int i = 1; i < 10; i++)
+        {
+            enemy1[i].move(10, 0);
+        }
     }
 }
 
@@ -732,9 +808,28 @@ void menufunc()
 //Level 1.
 void Level1()
 {
-
     window1.setFramerateLimit(40);
 
+
+    //enemies.
+    enemy.loadFromFile("Sprites/enemies.png");
+    for (int i = 0; i < 10; i++)
+    {
+        enemy1[i].setTexture(enemy);
+    }
+
+
+    for (int i = 0; i < 10; i++) {
+
+        if (i == 3 || i == 6 || i == 8) {
+            enemy1[i].setPosition(xpos, 320 - (i * 15));
+        }
+
+        else { enemy1[i].setPosition(xpos, 340); }
+        xpos += 1400;
+    }
+
+  
     //rings positions.
     ring1[1].setPosition(ring_starting_position = ring_starting_position + 50, 270);
     ring1[2].setPosition(ring_starting_position = ring_starting_position + 35, 210);
@@ -759,40 +854,40 @@ void Level1()
     }
      ring1[23].setPosition(ring_starting_position = ring_starting_position + 100, 280);
      ring1[24].setPosition(ring_starting_position = ring_starting_position - 50, 280);
-     ring1[26].setPosition(ring_starting_position = ring_starting_position + 950, 190);
-     ring1[27].setPosition(ring_starting_position = ring_starting_position + 50, 220);
-     ring1[28].setPosition(ring_starting_position = ring_starting_position + 50, 190);
-     ring1[29].setPosition(ring_starting_position = ring_starting_position + 50, 220);
-     ring1[30].setPosition(ring_starting_position = ring_starting_position + 50, 190);
-     ring1[31].setPosition(ring_starting_position = ring_starting_position + 50, 220);
-     ring1[32].setPosition(ring_starting_position = ring_starting_position + 50, 190);
-     ring1[33].setPosition(ring_starting_position = ring_starting_position + 50, 220);
-     ring1[34].setPosition(ring_starting_position = ring_starting_position + 800, 150);
-    for (int i = 35; i < 40; i++)
+     ring1[25].setPosition(ring_starting_position = ring_starting_position + 950, 190);
+     ring1[26].setPosition(ring_starting_position = ring_starting_position + 50, 220);
+     ring1[27].setPosition(ring_starting_position = ring_starting_position + 50, 190);
+     ring1[28].setPosition(ring_starting_position = ring_starting_position + 50, 220);
+     ring1[29].setPosition(ring_starting_position = ring_starting_position + 50, 190);
+     ring1[30].setPosition(ring_starting_position = ring_starting_position + 50, 220);
+     ring1[31].setPosition(ring_starting_position = ring_starting_position + 50, 190);
+     ring1[32].setPosition(ring_starting_position = ring_starting_position + 50, 220);
+     ring1[33].setPosition(ring_starting_position = ring_starting_position + 800, 150);
+    for (int i = 34; i <= 40; i++)
     {
         ring1[i].setPosition(ring_starting_position = ring_starting_position + 50, 150);
     }
       ring1[41].setPosition(ring_starting_position = ring_starting_position + 850, 90);
-      ring1[43].setPosition(ring_starting_position = ring_starting_position + 50, 70);
-      ring1[44].setPosition(ring_starting_position = ring_starting_position + 50, 90);
-      ring1[45].setPosition(ring_starting_position = ring_starting_position + 50, 70);
-      ring1[46].setPosition(ring_starting_position = ring_starting_position + 50, 90);
-      ring1[47].setPosition(ring_starting_position = ring_starting_position + 50, 70);
-      ring1[48].setPosition(ring_starting_position = ring_starting_position + 50, 90);
-      ring1[49].setPosition(ring_starting_position = ring_starting_position + 800, 80); 
-    for (int i = 50; i < 60; i++)
+      ring1[42].setPosition(ring_starting_position = ring_starting_position + 50, 70);
+      ring1[43].setPosition(ring_starting_position = ring_starting_position + 50, 90);
+      ring1[44].setPosition(ring_starting_position = ring_starting_position + 50, 70);
+      ring1[45].setPosition(ring_starting_position = ring_starting_position + 50, 90);
+      ring1[46].setPosition(ring_starting_position = ring_starting_position + 50, 70);
+      ring1[47].setPosition(ring_starting_position = ring_starting_position + 50, 90);
+      ring1[48].setPosition(ring_starting_position = ring_starting_position + 800, 80); 
+    for (int i = 49; i < 60; i++)
     {
         ring1[i].setPosition(ring_starting_position = ring_starting_position + 50, 80);
     }
         ring1[60].setPosition(ring_starting_position = ring_starting_position + 750, 400);
         ring1[61].setPosition(ring_starting_position = ring_starting_position + 850, 90);
-        ring1[63].setPosition(ring_starting_position = ring_starting_position + 50, 70);
-        ring1[64].setPosition(ring_starting_position = ring_starting_position + 50, 90);
-        ring1[65].setPosition(ring_starting_position = ring_starting_position + 800, 70);
-        ring1[67].setPosition(ring_starting_position = ring_starting_position + 50, 90);
-        ring1[68].setPosition(ring_starting_position = ring_starting_position + 50, 70);
-        ring1[69].setPosition(ring_starting_position = ring_starting_position + 800, 400);
-    for (int i = 70; i < 75; i++)
+        ring1[62].setPosition(ring_starting_position = ring_starting_position + 50, 70);
+        ring1[63].setPosition(ring_starting_position = ring_starting_position + 50, 90);
+        ring1[64].setPosition(ring_starting_position = ring_starting_position + 800, 70);
+        ring1[65].setPosition(ring_starting_position = ring_starting_position + 50, 90);
+        ring1[66].setPosition(ring_starting_position = ring_starting_position + 50, 70);
+        ring1[67].setPosition(ring_starting_position = ring_starting_position + 800, 400);
+    for (int i = 68; i < 75; i++)
     {
         ring1[i].setPosition(ring_starting_position = ring_starting_position + 50, 400);
     }
@@ -830,8 +925,13 @@ void Level1()
 
     while (window1.isOpen())
     {
-        //using moving function.
+     
+        //using moving function for character movement.
         moving(1);
+
+        //closing window.
+        closing();
+
 
         //boss fight music.
        if (background_level1[1].getPosition().x == -15000 && bossfight_music.getStatus()!=bossfight_music.Playing)
@@ -850,10 +950,6 @@ void Level1()
             BossMovemnt();
 
 
-
-        //closing window.
-        closing();
-
         //animation of rings function.
         ringsanimation();
 
@@ -871,10 +967,13 @@ void Level1()
         //trackig of rings and score.
         scoreandrings();
 
+        //movement of enemies.
+       enemyMovement();
+
         //drawing.
         window1.clear();
         window1.draw(background_level1[1]);
-        for (int i = 1; i <= 99; i++)
+        for (int i = 1; i <= 80; i++)
         {
             window1.draw(ring1[i]);
         }
@@ -896,6 +995,9 @@ void Level1()
         if (bossEcount >= 10 && background_level1[1].getPosition().x == -15000)
         {
             window1.draw(bossM);
+        }
+        for (int i = 0; i < 10; i++) {
+            window1.draw(enemy1[i]);
         }
         window1.draw(scoretext);
         window1.draw(ringstext);
@@ -929,7 +1031,7 @@ int main()
     sonic1.setPosition(15, ground);
 
     //titlescreen.
-     titlescreenfunc();
+    titlescreenfunc();
 
     //menuscreen.
      menufunc();
@@ -937,5 +1039,4 @@ int main()
     //level 1 start.
      if (lvl1)
         Level1();
-
 }
