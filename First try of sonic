@@ -15,7 +15,7 @@ using namespace sf;
 Sound  titlescreen_music, menu_music, coin_sound, Level1_music, bossfight_music;
 SoundBuffer  titlescreen_music1, menu_music1, coin_sound1, Level1_music1, bossfight1_music;
 Texture titlescreen, menu, background_level_1, ring, sonic, enemy, boss;
-Sprite titlescreen1, menu1, sonic1, background_level1[6], ring1[100], enemy1[10], boss1, bossCar1, bossE, bossM;
+Sprite titlescreen1[4], menu1, sonic1, background_level1[6], ring1[100], enemy1[10], boss1, bossCar1, bossE, bossM;
 Font font;
 Event event2, event3, event4;
 Text menu2[5], currname, nom, scr, nam, scoretrack, ringstrack, scoretext, ringstext;
@@ -25,6 +25,7 @@ int  ring_rect = 0, ring_starting_position = 500, scoredrings = 0, xpos=1400, co
 score = 0, numofplayers, scores_count = 0, notmoving = 0, mover = 0, moveu = 0, moved = 0, movel = 0,
 timedanimation1 = 0, timedanimation2 = 0, timedanimation3 = 0, timedanimation4 = 0,
 bosscount = 0, bossCarcount = 0, bossEcount = 0, y = 0, bossMcount = 0, bosshit = 0, bosslives = 30, counter = 0,
+TitleSpriteArr[20] = {80, 150, 252, 169, 455, 170, 672, 179, 904, 162, 1082, 174, 1294, 184, 1521, 183},
 sspritearr[50] = { 178,68,248, 67,317, 66,385 ,67,454, 67,523 ,67,594,
                    73,670 ,67,741 ,69,815 ,78, 899 ,77,980 ,79,1062 ,91,
                    1156 ,91,1251 ,88,1345 ,86,1439 ,86,1531 ,63,1602 ,63 },
@@ -174,7 +175,7 @@ void BossMovemnt()
 
     if (bossreachl == 0)
     {
-        bossspeed -= 0.5;
+        bossspeed -= 0.3;
         bossM.move(bossspeed, 0);
     }
 
@@ -191,7 +192,7 @@ void BossMovemnt()
 
     if (bossreachr == 0)
     {
-        bossspeed += 0.5;
+        bossspeed += 0.3;
         bossM.move(bossspeed, 0);
     }
 
@@ -620,19 +621,38 @@ void stats()
 //Titlescreen.
 void titlescreenfunc()
 {
-    titlescreen_music1.loadFromFile("Music/Green Hill Zone.ogg");
+    window1.setFramerateLimit(8);
+    int title = 0, t7=0;
+    titlescreen_music1.loadFromFile("Music/01 Title Screen.ogg");
     titlescreen_music.setBuffer(titlescreen_music1);
     titlescreen_music.play();
     titlescreen_music.setLoop(true);
 
+
+    titlescreen.loadFromFile("Sprites/background_titlescreen.png");
+
+    titlescreen1[0].setTexture(titlescreen);
+    titlescreen1[0].setTextureRect(IntRect(600, 0, 1000, 550));
+    titlescreen1[1].setTexture(titlescreen);
+    titlescreen1[1].setTextureRect(IntRect(5, 46, 576, 449));
+    titlescreen1[1].setPosition(200, 50);
+    titlescreen1[2].setTexture(titlescreen);
+    titlescreen1[2].setPosition(400, 165);
+
     while (!Keyboard::isKeyPressed(Keyboard::Space))
     {
         closing();
-        titlescreen.loadFromFile("Sprites/background_titlescreen.png");
-        titlescreen1.setTexture(titlescreen);
+
+
+        titlescreen1[2].setTextureRect(IntRect(TitleSpriteArr[title], 574, TitleSpriteArr[title+1], 172));
+        title += 2;
+        if (title == 16)
+            title = 12;
 
         window1.clear();
-        window1.draw(titlescreen1);
+        window1.draw(titlescreen1[0]);
+        window1.draw(titlescreen1[1]);
+        window1.draw(titlescreen1[2]);
         window1.display();
 
     }
@@ -1033,10 +1053,11 @@ int main()
     //titlescreen.
     titlescreenfunc();
 
+    window1.setFramerateLimit(60);
     //menuscreen.
      menufunc();
 
     //level 1 start.
-     if (lvl1)
+    if (lvl1)
         Level1();
 }
